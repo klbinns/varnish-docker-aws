@@ -1,0 +1,24 @@
+server {
+  listen      8080;
+
+  client_max_body_size 100M;
+  fastcgi_read_timeout 1800;
+
+  location /varnish-nginx-test.html {
+     # Test and heartbeat file. Does not forward request to ALB
+  }
+
+  location / {
+       # this causes DNS resolution of upstream every 10 minutes
+       resolver 8.8.8.8 valid=600s;
+
+       # setting backend as a variable in proxy_pass ensures cache invalidation of DNS lookup
+       # becuase nginx will requery name servers according to resolver defined above
+       
+       set $backend_servers ${ALB_HOSTNAME};
+
+       proxy_pass $backend_servers;
+       proxy_set_header Host $http_host;
+  }
+  
+}

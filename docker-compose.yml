@@ -1,0 +1,19 @@
+version: '2'
+services:
+
+  varnish:
+    build: ./varnish/
+    ports:
+      - "80:80"
+    links:
+      - varnish-nginx
+    command: /init.sh
+
+  varnish-nginx:
+    build: ./nginx/
+    ports:
+      - "8080:8080"
+    container_name: varnish-nginx
+    command: /bin/sh -c "envsubst '$$ALB_HOSTNAME' < /etc/nginx/conf.d/varnish-nginx.template > /etc/nginx/conf.d/varnish-nginx.conf && nginx  -g 'daemon off;'"
+    environment:
+      ALB_HOSTNAME: "http://localhost" # host name of the AWS ALB
